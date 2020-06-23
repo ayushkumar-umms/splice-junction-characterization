@@ -63,8 +63,8 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
     genes_three = three_info_df['gene_id'].unique().tolist() #genes on 3' end
     genes_five = five_info_df['gene_id'].unique().tolist() # genes on 5' end
     junctions_five = [] # name of region where 5' end is located when 5' end and 3' end share the same gene location
-    other_junctions_five = [] #name of region where 5' end is located when 5' end and 3' end DON'T share the same gene location
-    intersecting_genes = list(set(genes_five).intersection(genes_three)) # which genes are 5' end and 3' end found
+    #other_junctions_five = [] #name of region where 5' end is located when 5' end and 3' end DON'T share the same gene location
+    #intersecting_genes = list(set(genes_five).intersection(genes_three)) # which genes are 5' end and 3' end found
     #start = time.process_time()
     for geneid in genes_five:
         five_info_df_gene = five_info_df[five_info_df['gene_id'].isin([geneid])]
@@ -78,7 +78,7 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
         elif (five_info_df_gene['feature'].tolist().count('transcript')==five_info_df_gene['feature'].tolist().count('exon')): # if number of exons found = number of transcripts found, we check the constitutive exon dataframe if that exon and corresponding geneid are present
             exon_type = cons_exons[cons_exons['exon_id'].isin(exonids_five) & cons_exons['gene_id'].isin([geneid])]
             if not exon_type.empty:
-                five_con_exon.append(1)
+                five_con_exon.append(geneid + ':exon:' + str(exon_type.iloc[0]['start']) +'-'+ str(exon_type.iloc[0]['end']))
             else:
                 five_con_exon.append(0)
             #print(time.process_time() - st,1)
@@ -86,11 +86,13 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
             listofexons = five_info_df_gene[five_info_df_gene['feature'].isin(['exon'])]
             listofexons2 = listofexons.copy()
             listofexons2['string'] = geneid + ':chr' + listofexons['seqname'] +':exon:' + listofexons['start'].astype(str) + '-' + listofexons['end'].astype(str)
+            junctions_five.extend(listofexons2['string'].tolist())
+            '''
             if geneid in intersecting_genes:
                 junctions_five.extend(listofexons2['string'].tolist())
             else:
                 other_junctions_five.extend(listofexons2['string'].tolist())
-
+            '''
         elif (five_info_df_gene['feature'].tolist().count('transcript')!=five_info_df_gene['feature'].tolist().count('exon')) and (five_info_df_gene['feature'].tolist().count('exon') > 0):
             # if number of trasncripts differs from number of exons then we need to look at each exon and intron
             five_con_exon.append(0)
@@ -99,10 +101,12 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
             listofexons2 = listofexons.copy()
             listofexons2['string'] = geneid + ':chr' + listofexons['seqname'] +':exon:' + listofexons['start'].astype(str) + '-' + listofexons['end'].astype(str)
             junctions_five.extend(listofexons2['string'].tolist())
+            '''
             if geneid in intersecting_genes:
                 junctions_five.extend(listofexons2['string'].tolist())
             else:
                 other_junctions_five.extend(listofexons2['string'].tolist())
+            '''
             cnt_transcripts = Counter(five_info_df_gene['transcript_id'].dropna().tolist())
             sing_trans =  [a for a, b in cnt_transcripts.items() if b == 1]
             #count number of transcripts that are only repeated once in five_info_df_gene then it is an intron
@@ -111,11 +115,13 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
                 #print(time.process_time() - st,'c')
                 five_near_end_exon = nearbyexons[nearbyexons['end'] < five_ss].end.max()
                 five_near_start_exon = nearbyexons[nearbyexons['start'] > five_ss].start.min()
+                junctions_five.append(str(geneid + ':chr'+ splice_jnc.chr + ':intron:'+ str(five_near_end_exon + 1) +'-' + str(five_near_start_exon-1)))
+                '''
                 if geneid in intersecting_genes:
                     junctions_five.append(str(geneid + ':chr'+ splice_jnc.chr + ':intron:'+ str(five_near_end_exon + 1) +'-' + str(five_near_start_exon-1)))
                 else:
                     other_junctions_five.append(str(geneid + ':chr'+ splice_jnc.chr + ':intron:'+ str(five_near_end_exon + 1) +'-' + str(five_near_start_exon-1)))
-
+                '''
         else: #Only transcripts and no exons
             # Look at closest exons left and right of the coordinate
             nearbyexons = gtf_exons[gtf_exons['gene_id'].isin([geneid])]
@@ -125,10 +131,12 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
             five_start = nearbyexons[five_near_start_exon]['exon_id'].tolist()
             #five_start = nearbyexons[nearbyexons['start'] == (nearbyexons[nearbyexons['start'] > five_ss].start.min())]['exon_id'].unique.tolist()
             # if exons nearby are both constitutive exons then it must be in an constitutive intron
+            five_start_df = cons_exons[cons_exons['exon_id'].isin(five_start) & cons_exons['gene_id'].isin([geneid])]
+            five_end_df = cons_exons[cons_exons['exon_id'].isin(five_end) & cons_exons['gene_id'].isin([geneid])]
             if cons_exons[cons_exons['exon_id'].isin(five_start) & cons_exons['gene_id'].isin([geneid])].empty or cons_exons[cons_exons['exon_id'].isin(five_end) & cons_exons['gene_id'].isin([geneid])].empty:
                 five_con_intron.append(0)
             else:
-                five_con_intron.append(1)
+                five_con_intron.append(geneid + ':intron:' + str(five_end_df.iloc[0]['end'] +1) +'-'+  str(five_start_df.iloc[0]['start']-1))
             five_con_exon.append(np.nan)
             cnt_transcripts = Counter(five_info_df_gene['transcript_id'].dropna().tolist())
             sing_trans =  [a for a, b in cnt_transcripts.items() if b == 1]
@@ -136,15 +144,17 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
                 nearbyexons = gtf_exons[gtf_exons['transcript_id'].isin([tran])]
                 five_near_end_exon = nearbyexons[nearbyexons['end'] < five_ss].end.max()
                 five_near_start_exon = nearbyexons[nearbyexons['start'] > five_ss].start.min()
+                junctions_five.append(str(geneid + ':chr'+ splice_jnc.chr + ':intron:'+ str(five_near_end_exon+1) +'-' + str(five_near_start_exon-1)))
+                '''
                 if geneid in intersecting_genes:
                     junctions_five.append(str(geneid + ':chr'+ splice_jnc.chr + ':intron:'+ str(five_near_end_exon+1) +'-' + str(five_near_start_exon-1)))
                 else:
                     other_junctions_five.append(str(geneid + ':chr'+ splice_jnc.chr + ':intron:'+ str(five_near_end_exon+1) +'-' + str(five_near_start_exon-1)))
-
+                '''
     three_con_intron =[]
     three_con_exon = []
     junctions_three = []
-    other_junctions_three = []
+    #other_junctions_three = []
     for geneid in genes_three:
         three_info_df_gene = three_info_df[three_info_df['gene_id'].isin([geneid])]
         exonids_three = three_info_df_gene[three_info_df_gene['feature'].isin(['exon'])]['exon_id'].tolist()
@@ -156,7 +166,7 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
             #st = time.process_time()
             exon_type = cons_exons[cons_exons['exon_id'].isin(exonids_three) & cons_exons['gene_id'].isin([geneid])]
             if not exon_type.empty:
-                three_con_exon.append(1)
+                three_con_exon.append(geneid + ':exon:' + str(exon_type.iloc[0]['start']) +'-'+ str(exon_type.iloc[0]['end']))
             else:
                 three_con_exon.append(0)
             #print(time.process_time() - st,1)
@@ -165,11 +175,12 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
             listofexons2 = listofexons.copy()
             listofexons2['string'] = geneid + ':chr' + listofexons['seqname'] +':exon:' + listofexons['start'].astype(str) + '-' + listofexons['end'].astype(str)
             junctions_three.extend(listofexons2['string'].tolist())
+            '''
             if geneid in intersecting_genes:
                 junctions_three.extend(listofexons2['string'].tolist())
             else:
                 other_junctions_three.extend(listofexons2['string'].tolist())
-
+            '''
         elif (three_info_df_gene['feature'].tolist().count('transcript')!=three_info_df_gene['feature'].tolist().count('exon')) and (three_info_df_gene['feature'].tolist().count('exon') > 0):
             three_con_exon.append(0)
             three_con_intron.append(0)
@@ -183,20 +194,25 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
                 nearbyexons = gtf_exons[gtf_exons['transcript_id'].isin([tran])]
                 three_near_end_exon = nearbyexons[nearbyexons['end'] < three_ss].end.max()
                 three_near_start_exon = nearbyexons[nearbyexons['start'] > three_ss].start.min()
+                junctions_three.append(str(geneid + ':chr'+ splice_jnc.chr + ':intron:'+ str(three_near_end_exon + 1) +'-' + str(three_near_start_exon-1)))
+                '''
                 if geneid in intersecting_genes:
                     junctions_three.append(str(geneid + ':chr'+ splice_jnc.chr + ':intron:'+ str(three_near_end_exon + 1) +'-' + str(three_near_start_exon-1)))
                 else:
                     other_junctions_three.append(str(geneid + ':chr'+ splice_jnc.chr + ':intron:'+ str(three_near_end_exon + 1) +'-' + str(three_near_start_exon-1)))
+                '''
         else:
             nearbyexons = gtf_exons[gtf_exons['gene_id'].isin([geneid])]
             three_near_end_exon = (nearbyexons['end']==(nearbyexons[nearbyexons['end'] < three_ss].end.max()))
             three_end = nearbyexons[three_near_end_exon]['exon_id'].tolist()
             three_near_start_exon = (nearbyexons['start'] == (nearbyexons[nearbyexons['start'] > three_ss].start.min()))
             three_start = nearbyexons[three_near_start_exon]['exon_id'].tolist()
+            three_start_df = cons_exons[cons_exons['exon_id'].isin(three_start)& cons_exons['gene_id'].isin([geneid])]
+            three_end_df = cons_exons[cons_exons['exon_id'].isin(three_end) & cons_exons['gene_id'].isin([geneid])]
             if cons_exons[cons_exons['exon_id'].isin(three_start)& cons_exons['gene_id'].isin([geneid])].empty or cons_exons[cons_exons['exon_id'].isin(three_end) & cons_exons['gene_id'].isin([geneid])].empty:
                 three_con_intron.append(0)
             else:
-                three_con_intron.append(1)
+                three_con_intron.append(geneid + ':intron:' + str(three_end_df.iloc[0]['end'] +1 ) +'-'+  str(three_start_df.iloc[0]['start']-1))
             three_con_exon.append(np.nan)
             #print(time.process_time() - st,3)
             cnt_transcripts = Counter(three_info_df_gene['transcript_id'].dropna().tolist())
@@ -205,40 +221,53 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
                 nearbyexons = gtf_exons[gtf_exons['transcript_id'].isin([tran])]
                 three_near_end_exon = nearbyexons[nearbyexons['end'] < three_ss].end.max()
                 three_near_start_exon = nearbyexons[nearbyexons['start'] > three_ss].start.min()
+                junctions_three.append(str(geneid + ':chr'+ splice_jnc.chr + ':intron:'+ str(three_near_end_exon+1) +'-' + str(three_near_start_exon-1)))
+                '''
                 if geneid in intersecting_genes:
                     junctions_three.append(str(geneid + ':chr'+ splice_jnc.chr + ':intron:'+ str(three_near_end_exon+1) +'-' + str(three_near_start_exon-1)))
                 else:
                     other_junctions_three.append(str(geneid + ':chr'+ splice_jnc.chr + ':intron:'+ str(three_near_end_exon+1) +'-' + str(three_near_start_exon-1)))
-    if 1 in five_con_exon:
-        dict_five['constitutiveexon'] = 1
+                '''
+    five_con_exon_val = [x for x in five_con_exon if x not in [0,np.nan]]
+    five_con_intron_val = [x for x in five_con_intron if x not in [0,np.nan]]
+    if five_con_exon_val:
+        dict_five['constitutiveexon'] = ';'.join(five_con_exon_val)
     elif 0 in five_con_exon:
         dict_five['constitutiveexon'] = 0
     else:
         dict_five['constitutiveexon'] = np.nan
-    if 1 in five_con_intron:
-        dict_five['constitutiveintron'] = 1
+    if five_con_intron_val:
+        dict_five['constitutiveintron'] = ';'.join(five_con_intron_val)
     elif 0 in five_con_intron:
         dict_five['constitutiveintron'] = 0
     else:
         dict_five['constitutiveintron'] = np.nan
-    if 1 in three_con_exon:
-        dict_three['constitutiveexon'] = 1
+
+    three_con_exon_val = [x for x in three_con_exon if x not in [0,np.nan]]
+    three_con_intron_val = [x for x in three_con_intron if x not in [0,np.nan]]
+
+    if three_con_exon_val:
+        dict_three['constitutiveexon'] = ';'.join(three_con_exon_val)
     elif 0 in three_con_exon:
         dict_three['constitutiveexon'] = 0
     else:
         dict_three['constitutiveexon'] = np.nan
-    if 1 in three_con_intron:
-        dict_three['constitutiveintron'] = 1
+    if three_con_intron_val:
+        dict_three['constitutiveintron'] = ';'.join(three_con_exon_val)
     elif 0 in three_con_intron:
         dict_three['constitutiveintron'] = 0
     else:
         dict_three['constitutiveintron'] = np.nan
+    if dict_five['gene'] == 1:
+        dict_five['gene'] == ';'.join([itm.split(':',1)[0] for itm in junctions_five])
+    if dict_three['gene'] == 1:
+        dict_three['gene'] == ';'.join([itm.split(':',1)[0] for itm in junctions_three])
     dict_five['intron'] = five_intron
     dict_three['intron'] = three_intron
-    dict_five['specificregions'] = set(junctions_five)
-    dict_three['specificregions'] = set(junctions_three)
-    dict_five['otherregions'] = set(other_junctions_five)
-    dict_three['otherregions'] = set(other_junctions_three)
+    dict_five['specificregions'] = ';'.join(set(junctions_five).tolist())
+    dict_three['specificregions'] = ';'.join(set(junctions_three).tolist())
+    #dict_five['otherregions'] = set(other_junctions_five)
+    #dict_three['otherregions'] = set(other_junctions_three)
     return (dict_five, dict_three)
 
 def alt_vs_cons_splicing(splice_jnc, gtf):
