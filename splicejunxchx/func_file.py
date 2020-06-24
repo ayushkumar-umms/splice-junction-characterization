@@ -253,19 +253,32 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
     else:
         dict_three['constitutiveexon'] = np.nan
     if three_con_intron_val:
-        dict_three['constitutiveintron'] = ';'.join(three_con_exon_val)
+        dict_three['constitutiveintron'] = ';'.join(three_con_intron_val)
     elif 0 in three_con_intron:
         dict_three['constitutiveintron'] = 0
     else:
         dict_three['constitutiveintron'] = np.nan
-    if dict_five['gene'] == 1:
-        dict_five['gene'] == ';'.join([itm.split(':',1)[0] for itm in junctions_five])
-    if dict_three['gene'] == 1:
-        dict_three['gene'] == ';'.join([itm.split(':',1)[0] for itm in junctions_three])
+
+    junctions_five = list(set(junctions_five))
+    junctions_three = list(set(junctions_three))
     dict_five['intron'] = five_intron
     dict_three['intron'] = three_intron
-    dict_five['specificregions'] = ';'.join(set(junctions_five).tolist())
-    dict_three['specificregions'] = ';'.join(set(junctions_three).tolist())
+    if  dict_five['gene'] == 1:
+        dict_five['gene'] = ';'.join(list(set([itm.split(':',1)[0] for itm in junctions_five])))
+    if dict_three['gene'] == 1:
+        dict_three['gene'] = ';'.join(list(set([itm.split(':',1)[0] for itm in junctions_three])))
+    if dict_five['exon'] == 1:
+        dict_five['exon'] = ';'.join([(s.split(':')[0] +':'+ s.split(':')[-1]) for s in junctions_five if ':exon:' in s])
+    if dict_three['exon'] == 1:
+        dict_three['exon'] =';'.join([(s.split(':')[0] +':'+ s.split(':')[-1]) for s in junctions_three if ':exon:' in s])
+    if dict_five['intron'] == 1:
+        dict_five['intron'] = ';'.join([(s.split(':')[0] +':'+ s.split(':')[-1]) for s in junctions_five if ':intron:' in s])
+    if dict_three['intron'] == 1:
+        dict_three['intron'] = ';'.join([(s.split(':')[0] +':'+ s.split(':')[-1]) for s in junctions_three if ':intron:' in s])
+    #dict_five['intron'] = five_intron
+    #dict_three['intron'] = three_intron
+    dict_five['strandofgene'] = ';'.join(list(set(junctions_five)))
+    dict_three['strandofgene'] = ';'.join(list(set(junctions_three)))
     #dict_five['otherregions'] = set(other_junctions_five)
     #dict_three['otherregions'] = set(other_junctions_three)
     return (dict_five, dict_three)
@@ -315,17 +328,17 @@ def closest_splice_sites(jnc, splice_list):
     lb_right_start = gtf[gtf['dist_start_lb'] > 0].dist_start_lb.min()
     lb_right_end = gtf[gtf['dist_end_lb'] > 0].dist_end_lb.min()
     if jnc.strand == 1:
-        splicesite_dict = {"first_base_to_upstream5'ss": fb_left_start, "first_base_to_upstream3'ss": fb_left_end,
-                           "first_base_to_downstream5'ss": fb_right_start,"first_base_to_downstream3'ss": fb_right_end,
-                           "last_base_to_upstream5'ss": lb_left_start, "last_base_to_upstream3'ss": lb_left_end,
-                           "last_base_to_downstream5'ss": lb_right_start,"last_base_to_downstream3'ss": lb_right_end,
-                           "5'annotated": fb_annotation, "3'annotated":lb_annotation}
+        splicesite_dict = {"5ss_to_upstream5ss": fb_left_start, "5ss_to_upstream3ss": fb_left_end,
+                           "5ss_to_downstream5ss": fb_right_start,"5ss_to_downstream3ss": fb_right_end,
+                           "3ss_to_upstream5ss": lb_left_start, "3ss_to_upstream3ss": lb_left_end,
+                           "3ss_to_downstream5ss": lb_right_start,"3ss_to_downstream3ss": lb_right_end,
+                           "5annotated": fb_annotation, "3annotated":lb_annotation}
     else:
-        splicesite_dict = {"first_base_to_upstream5'ss": fb_right_end, "first_base_to_upstream3'ss": fb_right_start,
-                            "first_base_to_downstream5'ss": fb_left_end,"first_base_to_downstream3'ss": fb_left_start,
-                            "last_base_to_upstream5'ss": lb_right_end, "last_base_to_upstream3'ss": lb_right_start,
-                            "last_base_to_downstream5'ss": lb_left_end,"last_base_to_downstream3'ss": lb_left_start,
-                           "5'annotated": lb_annotation, "3'annotated":fb_annotation}
+        splicesite_dict = {"3ss_to_upstream5ss": fb_right_end, "3ss_to_upstream3ss": fb_right_start,
+                            "3ss_to_downstream5ss": fb_left_end,"3ss_to_downstream3ss": fb_left_start,
+                            "5ss_to_upstream5ss": lb_right_end, "5ss_to_upstream3ss": lb_right_start,
+                            "5ss_to_downstream5ss": lb_left_end,"5ss_to_downstream3ss": lb_left_start,
+                           "5annotated": lb_annotation, "3annotated":fb_annotation}
     return splicesite_dict
 
 def phyloP_func(jnc, bigwig, rangeval):

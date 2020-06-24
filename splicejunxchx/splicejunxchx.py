@@ -109,30 +109,32 @@ def main():
     #final_df = jnc_df[col_names[0:6]]
     jnc_df = jnc_df.sort_values(by = ['chr','strand'])
     # add_cols is all the data we want to gather and have in our final datarame
-    add_cols = ["5'_in_gene", "5'_in_transcript","5'_in_exon","5'_in_constitutiveexon","5'_in_intron", "5'_in_constitutiveintron","5'_in_fiveprimeutr","5'_in_threeprimeutr","5'_in_CDS","5'_in_startcodon","5'_in_stopcodon",  "5'_in_specificregions",  "5'_in_otherregions" , "3'_in_gene", "3'_in_transcript", "3'_in_exon",  "3'_in_constitutiveexon",
-                "3'_in_intron","3'_in_constitutiveintron","3'_in_fiveprimeutr","3'_in_threeprimeutr","3'_in_CDS","3'_in_startcodon","3'_in_stopcodon","3'_in_specificregions", "3'_in_otherregions"]
+    add_cols = ["5_in_gene","5_in_exon","5_in_constitutiveexon","5_in_intron", "5_in_constitutiveintron","5_in_fiveprimeutr","5_in_threeprimeutr","5_in_CDS","5_in_startcodon","5_in_stopcodon",  "5_in_strandofgene", "3_in_gene", "3_in_exon",  "3_in_constitutiveexon",
+                "3_in_intron","3_in_constitutiveintron","3_in_fiveprimeutr","3_in_threeprimeutr","3_in_CDS","3_in_startcodon","3_in_stopcodon","3_in_strandofgene"]
 
     if args.sequence_file != None:
-        seq_info = ["5'ss_sequence_51bp", "3'ss_sequence_51bp", "5'ss_sequence_2bp","3'ss_sequence_2bp","5'bases_maxEnt","3'bases_maxEnt", "5'score_maxEnt","3'score_maxEnt"]
+        seq_info = ["5ss_sequence_51bp", "3ss_sequence_51bp", "5ss_sequence_2bp","3ss_sequence_2bp","5bases_maxEnt","3bases_maxEnt", "5score_maxEnt","3score_maxEnt"]
     else:
         seq_info = []
     if args.phyloPscores != None:
-        phyloP_cols = ["5'phyloPscore", "3'phyloPscore", "5'phyloPlist", "3'phyloPlist"]
+        phyloP_cols = ["5phyloPscore", "3phyloPscore", "5phyloPlist", "3phyloPlist"]
     else:
         phyloP_cols = []
 
-    splice_sites_nearby_cols = ["5'annotated", "3'annotated",
-                "first_base_to_upstream5'ss", "first_base_to_upstream3'ss",
-                "first_base_to_downstream5'ss","first_base_to_downstream3'ss",
-                "last_base_to_upstream5'ss", "last_base_to_upstream3'ss",
-                "last_base_to_downstream5'ss","last_base_to_downstream3'ss"]
+    splice_sites_nearby_cols = ["5annotated", "3annotated",
+                "5ss_to_upstream5ss", "5ss_to_upstream3ss",
+                "5ss_to_downstream5ss","5ss_to_downstream3ss",
+                "3ss_to_upstream5ss", "3ss_to_upstream3ss",
+                "3ss_to_downstream5ss","3ss_to_downstream3ss"]
 
     all_cols = add_cols +splice_sites_nearby_cols+seq_info+phyloP_cols
     for col in all_cols:
         final_df[col] = np.nan
-        if col in ["5'_in_specificregions","3'_in_specificregions", "5'phyloPlist", "3'phyloPlist", "5'_in_otherregions", "3'_in_otherregions"]:
+        if col in add_cols:
             final_df[col] = final_df[col].astype('object')
-        if col in seq_info:
+        elif col in ["5_in_specificregions","3_in_specificregions", "5phyloPlist", "3phyloPlist", "5_in_otherregions", "3_in_otherregions"]:
+            final_df[col] = final_df[col].astype('object')
+        elif col in seq_info:
             final_df[col] = final_df[col].astype('str')
     print(final_df.head(10))
 
@@ -144,9 +146,9 @@ def main():
 
     # Search each junction through GTF file
 
-    five_prime_str = "5'_"
+    five_prime_str = "5_"
     five_prime_cols = list(filter(lambda x: five_prime_str in x, final_df.columns))
-    three_prime_str = "3'_"
+    three_prime_str = "3_"
     three_prime_cols = list(filter(lambda x: three_prime_str in x, final_df.columns))
     '''
     jnc_df = jnc_df.iloc[0:100,:]
@@ -215,15 +217,15 @@ def main():
         if args.phyloPscores != None:
             fb_phyloPval, fb_extract_phyloP, lb_phyloPval, lb_extract_phyloP = phyloP_func(jncrow,args.phyloPscores[0], args.phyloPscores[1])
             if jncrow.strand == 1:
-                final_df.at[jncrow.Index, "5'phyloPscore"] = fb_phyloPval
-                final_df.at[jncrow.Index, "5'phyloPlist"] = fb_extract_phyloP
-                final_df.at[jncrow.Index, "3'phyloPscore"] = lb_phyloPval
-                final_df.at[jncrow.Index, "3'phyloPlist"] = lb_extract_phyloP
+                final_df.at[jncrow.Index, "5phyloPscore"] = fb_phyloPval
+                final_df.at[jncrow.Index, "5phyloPlist"] = fb_extract_phyloP
+                final_df.at[jncrow.Index, "3phyloPscore"] = lb_phyloPval
+                final_df.at[jncrow.Index, "3phyloPlist"] = lb_extract_phyloP
             elif jncrow.strand == 2:
-                final_df.at[jncrow.Index, "3'phyloPscore"] = fb_phyloPval
-                final_df.at[jncrow.Index, "3'phyloPlist"] = fb_extract_phyloP
-                final_df.at[jncrow.Index, "5'phyloPscore"] = lb_phyloPval
-                final_df.at[jncrow.Index, "5'phyloPlist"] = lb_extract_phyloP
+                final_df.at[jncrow.Index, "3phyloPscore"] = fb_phyloPval
+                final_df.at[jncrow.Index, "3phyloPlist"] = fb_extract_phyloP
+                final_df.at[jncrow.Index, "5phyloPscore"] = lb_phyloPval
+                final_df.at[jncrow.Index, "5phyloPlist"] = lb_extract_phyloP
 
         for val in five_prime_cols: # Add all 5' info into the appropriate columns
             if val.split('_')[-1] not in five_dict:
@@ -253,21 +255,22 @@ def main():
         seqs_site3 =  seqs_site3.reindex(index=seqs_site3.index.to_series().str.slice(start=3).astype(float).sort_values().index) # order sequences based on JNC_ID index values
         seqs_site5 = seqs_site5.reindex(index=seqs_site5.index.to_series().str.slice(start=3).astype(float).sort_values().index)
         final_df = final_df.reindex(index=final_df.index.to_series().str.slice(start=3).astype(float).sort_values().index) # order final_df based on JNC_ID index values
-        final_df.loc[final_df.index.isin(seqs_site3.index.tolist()),"3'ss_sequence_51bp"] = seqs_site3['seq'].tolist() # Attach list of sequences to series
-        final_df.loc[final_df.index.isin(seqs_site5.index.tolist()),"5'ss_sequence_51bp"] = seqs_site5['seq'].tolist() # Attach list of sequences to series
+        final_df.loc[final_df.index.isin(seqs_site3.index.tolist()),"3ss_sequence_51bp"] = seqs_site3['seq'].tolist() # Attach list of sequences to series
+        final_df.loc[final_df.index.isin(seqs_site5.index.tolist()),"5ss_sequence_51bp"] = seqs_site5['seq'].tolist() # Attach list of sequences to series
 
         # Extract sequences needed for maxEnt and the 2bp at the 5' and 3' end
 
-        final_df.loc[~final_df["5'ss_sequence_51bp"].isin([np.nan,'nan']), "5'ss_sequence_2bp"] = final_df.loc[~final_df["5'ss_sequence_51bp"].isin([np.nan, 'nan'])]["5'ss_sequence_51bp"].str.slice(start = 25, stop = 27)
-        final_df.loc[~final_df["5'ss_sequence_51bp"].isin([np.nan, 'nan']), "5'bases_maxEnt"] = final_df.loc[~final_df["5'ss_sequence_51bp"].isin([np.nan, 'nan'])]["5'ss_sequence_51bp"].str.slice(start = 22, stop =31)
-        final_df.loc[~final_df["3'ss_sequence_51bp"].isin([np.nan, 'nan']), "3'ss_sequence_2bp"] = final_df.loc[~final_df["3'ss_sequence_51bp"].isin([np.nan, 'nan'])]["3'ss_sequence_51bp"].str.slice(start = 24, stop =  26)
-        final_df.loc[~final_df["3'ss_sequence_51bp"].isin([np.nan, 'nan']), "3'bases_maxEnt"] = final_df.loc[~final_df["3'ss_sequence_51bp"].isin([np.nan, 'nan'])]["3'ss_sequence_51bp"].str.slice(start = 6, stop = 29)
+        final_df.loc[~final_df["5ss_sequence_51bp"].isin([np.nan,'nan']), "5ss_sequence_2bp"] = final_df.loc[~final_df["5ss_sequence_51bp"].isin([np.nan, 'nan'])]["5ss_sequence_51bp"].str.slice(start = 25, stop = 27)
+        final_df.loc[~final_df["5ss_sequence_51bp"].isin([np.nan, 'nan']), "5bases_maxEnt"] = final_df.loc[~final_df["5ss_sequence_51bp"].isin([np.nan, 'nan'])]["5ss_sequence_51bp"].str.slice(start = 22, stop =31)
+        final_df.loc[~final_df["3ss_sequence_51bp"].isin([np.nan, 'nan']), "3ss_sequence_2bp"] = final_df.loc[~final_df["3ss_sequence_51bp"].isin([np.nan, 'nan'])]["3ss_sequence_51bp"].str.slice(start = 24, stop =  26)
+        final_df.loc[~final_df["3ss_sequence_51bp"].isin([np.nan, 'nan']), "3bases_maxEnt"] = final_df.loc[~final_df["3ss_sequence_51bp"].isin([np.nan, 'nan'])]["3ss_sequence_51bp"].str.slice(start = 6, stop = 29)
         if args.maxEntscore:
-            max_ent_seq_info = final_df.loc[~final_df["5'bases_maxEnt"].isin([np.nan,'', 'nan']) & ~final_df["3'bases_maxEnt"].isin([np.nan,'', 'nan'])]
+            max_ent_seq_info = final_df.loc[~final_df["5bases_maxEnt"].isin([np.nan,'', 'nan']) & ~final_df["3bases_maxEnt"].isin([np.nan,'', 'nan'])]
             max_ent_seq_info.to_csv('data/max_ent_seq.csv', header = True, index = True)
             max_ent_series_5, max_ent_series_3 = calculate_maxEnt(max_ent_seq_info)
-            final_df.loc[~final_df["5'bases_maxEnt"].isin([np.nan,'','nan']) & ~final_df["3'bases_maxEnt"].isin([np.nan,'','nan']), "5'score_maxEnt"] = max_ent_series_5["maxEnt_5"].tolist()
-            final_df.loc[~final_df["5'bases_maxEnt"].isin([np.nan,'','nan']) & ~final_df["3'bases_maxEnt"].isin([np.nan,'','nan']), "3'score_maxEnt"] = max_ent_series_3["maxEnt_3"].tolist()
+            final_df.loc[~final_df["5bases_maxEnt"].isin([np.nan,'','nan']) & ~final_df["3bases_maxEnt"].isin([np.nan,'','nan']), "5score_maxEnt"] = max_ent_series_5["maxEnt_5"].tolist()
+            final_df.loc[~final_df["5bases_maxEnt"].isin([np.nan,'','nan']) & ~final_df["3bases_maxEnt"].isin([np.nan,'','nan']), "3score_maxEnt"] = max_ent_series_3["maxEnt_3"].tolist()
+    final_df['strand_label'] = df.apply(lambda x: '+' if x ==1 else ('-' if x==2 else np.nan))
     print(final_df[522:530])
 
 
