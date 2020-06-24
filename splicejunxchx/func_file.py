@@ -235,13 +235,13 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
     elif 0 in five_con_exon:
         dict_five['constitutiveexon'] = 0
     else:
-        dict_five['constitutiveexon'] = np.nan
+        dict_five['constitutiveexon'] = 'NA'
     if five_con_intron_val:
         dict_five['constitutiveintron'] = ';'.join(five_con_intron_val)
     elif 0 in five_con_intron:
         dict_five['constitutiveintron'] = 0
     else:
-        dict_five['constitutiveintron'] = np.nan
+        dict_five['constitutiveintron'] = 'NA'
 
     three_con_exon_val = [x for x in three_con_exon if x not in [0,np.nan]]
     three_con_intron_val = [x for x in three_con_intron if x not in [0,np.nan]]
@@ -251,13 +251,13 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
     elif 0 in three_con_exon:
         dict_three['constitutiveexon'] = 0
     else:
-        dict_three['constitutiveexon'] = np.nan
+        dict_three['constitutiveexon'] = 'NA'
     if three_con_intron_val:
         dict_three['constitutiveintron'] = ';'.join(three_con_intron_val)
     elif 0 in three_con_intron:
         dict_three['constitutiveintron'] = 0
     else:
-        dict_three['constitutiveintron'] = np.nan
+        dict_three['constitutiveintron'] = 'NA'
 
     junctions_five = list(set(junctions_five))
     junctions_three = list(set(junctions_three))
@@ -277,8 +277,8 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
         dict_three['intron'] = ';'.join([(s.split(':')[0] +':'+ s.split(':')[-1]) for s in junctions_three if ':intron:' in s])
     #dict_five['intron'] = five_intron
     #dict_three['intron'] = three_intron
-    dict_five['strandofgene'] = ';'.join(list(set(junctions_five)))
-    dict_three['strandofgene'] = ';'.join(list(set(junctions_three)))
+    dict_five['strandofgene'] = five_info_df['strand'].iloc[0]
+    dict_three['strandofgene'] = three_info_df['strand'].iloc[0]
     #dict_five['otherregions'] = set(other_junctions_five)
     #dict_three['otherregions'] = set(other_junctions_three)
     return (dict_five, dict_three)
@@ -314,19 +314,19 @@ def closest_splice_sites(jnc, splice_list):
         fb_annotation = 0
     else:
         fb_annotation = 1
-    fb_left_start = gtf[gtf['dist_start_fb'] < 0].dist_start_fb.max()
-    fb_left_end = gtf[gtf['dist_end_fb'] < 0].dist_end_fb.max()
-    fb_right_start = gtf[gtf['dist_start_fb'] > 0].dist_start_fb.min()
-    fb_right_end = gtf[gtf['dist_end_fb'] > 0].dist_end_fb.min()
+    fb_left_start = gtf[gtf['dist_start_fb'] <= 0].dist_start_fb.max()
+    fb_left_end = gtf[gtf['dist_end_fb'] <= 0].dist_end_fb.max()
+    fb_right_start = gtf[gtf['dist_start_fb'] >= 0].dist_start_fb.min()
+    fb_right_end = gtf[gtf['dist_end_fb'] >= 0].dist_end_fb.min()
 
     if len(gtf[ss_lb].index) == 0:
         lb_annotation = 0
     else:
         lb_annotation =1
-    lb_left_start = gtf[gtf['dist_start_lb'] < 0].dist_start_lb.max()
-    lb_left_end = gtf[gtf['dist_end_lb'] < 0].dist_end_lb.max()
-    lb_right_start = gtf[gtf['dist_start_lb'] > 0].dist_start_lb.min()
-    lb_right_end = gtf[gtf['dist_end_lb'] > 0].dist_end_lb.min()
+    lb_left_start = gtf[gtf['dist_start_lb'] <= 0].dist_start_lb.max()
+    lb_left_end = gtf[gtf['dist_end_lb'] <= 0].dist_end_lb.max()
+    lb_right_start = gtf[gtf['dist_start_lb'] >= 0].dist_start_lb.min()
+    lb_right_end = gtf[gtf['dist_end_lb'] >= 0].dist_end_lb.min()
     if jnc.strand == 1:
         splicesite_dict = {"5ss_to_upstream5ss": fb_left_start, "5ss_to_upstream3ss": fb_left_end,
                            "5ss_to_downstream5ss": fb_right_start,"5ss_to_downstream3ss": fb_right_end,
@@ -372,8 +372,8 @@ def phyloP_func(jnc, bigwig, rangeval):
 
     #print(time.process_time() -st, '2a')
     if fb_phyloP.empty:
-        fb_score = np.nan
-        fb_list_fin = [np.nan]
+        fb_score = 'NA'
+        fb_list_fin = ['NA']
     else:
         if ((jnc.first_base - int(float(rangeval)/2)) > fb_phyloP['start'].iloc[0]):
             fb_phyloP['length'].iloc[0] = fb_phyloP['end'].iloc[0] - (jnc.first_base - int(float(rangeval)/2)) +1
@@ -396,15 +396,15 @@ def phyloP_func(jnc, bigwig, rangeval):
             if fb_phyloP['start'].iloc[i] - fb_phyloP['end'].iloc[i-1] == 1:
                 fb_list_fin.extend([np.around(fb_phyloP['score'].iloc[i],3)]*fb_phyloP['length'].iloc[i])
             else:
-                fb_list_fin.extend([np.nan]*(fb_phyloP['start'].iloc[i] - fb_phyloP['end'].iloc[i-1] - 1))
+                fb_list_fin.extend(['NA']*(fb_phyloP['start'].iloc[i] - fb_phyloP['end'].iloc[i-1] - 1))
                 fb_list_fin.extend([np.around(fb_phyloP['score'].iloc[i],3)]*fb_phyloP['length'].iloc[i])
 
         #fb_phyloP_fin = fb_phyloP_fin.set_index('start')
         #fb_list = fb_phyloP_fin.values.tolist()
 
     if lb_phyloP.empty:
-        lb_score = np.nan
-        lb_list_fin = [np.nan]
+        lb_score = 'NA'
+        lb_list_fin = ['NA']
     else:
         if ((jnc.last_base - int(float(rangeval)/2)) > lb_phyloP['start'].iloc[0]):
             lb_phyloP['length'].iloc[0] = lb_phyloP['end'].iloc[0] - (jnc.last_base - int(float(rangeval)/2)) +1
@@ -430,7 +430,7 @@ def phyloP_func(jnc, bigwig, rangeval):
             if lb_phyloP['start'].iloc[i] - lb_phyloP['end'].iloc[i-1] == 1:
                 lb_list_fin.extend([np.around(lb_phyloP['score'].iloc[i],3)]*lb_phyloP['length'].iloc[i])
             else:
-                lb_list_fin.extend([np.nan]*(lb_phyloP['start'].iloc[i] - lb_phyloP['end'].iloc[i-1] - 1))
+                lb_list_fin.extend(['NA']*(lb_phyloP['start'].iloc[i] - lb_phyloP['end'].iloc[i-1] - 1))
                 lb_list_fin.extend([np.around(lb_phyloP['score'].iloc[i],3)]*lb_phyloP['length'].iloc[i])
     #print(time.process_time() -st, '3a')
     return fb_score, fb_list_fin, lb_score, lb_list_fin

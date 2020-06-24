@@ -105,7 +105,7 @@ def main():
         cons_exons.to_csv('data/cons_exons_%s.csv', index = False) % temp.rsplit('/',1)[-1]
     #  Final df to develop
     #final_df = jnc_df.iloc[0:100,0:6]
-    final_df = jnc_df.iloc[:,np.r_[0:6,9]].copy()
+    final_df = jnc_df.iloc[:,np.r_[0:8,9]].copy()
     #final_df = jnc_df[col_names[0:6]]
     jnc_df = jnc_df.sort_values(by = ['chr','strand'])
     # add_cols is all the data we want to gather and have in our final datarame
@@ -129,7 +129,7 @@ def main():
 
     all_cols = add_cols +splice_sites_nearby_cols+seq_info+phyloP_cols
     for col in all_cols:
-        final_df[col] = np.nan
+        final_df[col] = 'NA'  #np.nan
         if col in add_cols:
             final_df[col] = final_df[col].astype('object')
         elif col in ["5_in_specificregions","3_in_specificregions", "5phyloPlist", "3phyloPlist", "5_in_otherregions", "3_in_otherregions"]:
@@ -260,19 +260,19 @@ def main():
 
         # Extract sequences needed for maxEnt and the 2bp at the 5' and 3' end
 
-        final_df.loc[~final_df["5ss_sequence_51bp"].isin([np.nan,'nan']), "5ss_sequence_2bp"] = final_df.loc[~final_df["5ss_sequence_51bp"].isin([np.nan, 'nan'])]["5ss_sequence_51bp"].str.slice(start = 25, stop = 27)
-        final_df.loc[~final_df["5ss_sequence_51bp"].isin([np.nan, 'nan']), "5bases_maxEnt"] = final_df.loc[~final_df["5ss_sequence_51bp"].isin([np.nan, 'nan'])]["5ss_sequence_51bp"].str.slice(start = 22, stop =31)
-        final_df.loc[~final_df["3ss_sequence_51bp"].isin([np.nan, 'nan']), "3ss_sequence_2bp"] = final_df.loc[~final_df["3ss_sequence_51bp"].isin([np.nan, 'nan'])]["3ss_sequence_51bp"].str.slice(start = 24, stop =  26)
-        final_df.loc[~final_df["3ss_sequence_51bp"].isin([np.nan, 'nan']), "3bases_maxEnt"] = final_df.loc[~final_df["3ss_sequence_51bp"].isin([np.nan, 'nan'])]["3ss_sequence_51bp"].str.slice(start = 6, stop = 29)
+        final_df.loc[~final_df["5ss_sequence_51bp"].isin([np.nan,'nan','NA']), "5ss_sequence_2bp"] = final_df.loc[~final_df["5ss_sequence_51bp"].isin([np.nan,'nan','NA'])]["5ss_sequence_51bp"].str.slice(start = 25, stop = 27)
+        final_df.loc[~final_df["5ss_sequence_51bp"].isin([np.nan,'NA','nan']), "5bases_maxEnt"] = final_df.loc[~final_df["5ss_sequence_51bp"].isin([np.nan,'NA','nan'])]["5ss_sequence_51bp"].str.slice(start = 22, stop =31)
+        final_df.loc[~final_df["3ss_sequence_51bp"].isin([np.nan,'NA','nan']), "3ss_sequence_2bp"] = final_df.loc[~final_df["3ss_sequence_51bp"].isin([np.nan,'NA','nan'])]["3ss_sequence_51bp"].str.slice(start = 24, stop =  26)
+        final_df.loc[~final_df["3ss_sequence_51bp"].isin([np.nan,'NA','nan']), "3bases_maxEnt"] = final_df.loc[~final_df["3ss_sequence_51bp"].isin([np.nan,'NA','nan'])]["3ss_sequence_51bp"].str.slice(start = 6, stop = 29)
         if args.maxEntscore:
-            max_ent_seq_info = final_df.loc[~final_df["5bases_maxEnt"].isin([np.nan,'', 'nan']) & ~final_df["3bases_maxEnt"].isin([np.nan,'', 'nan'])]
+            max_ent_seq_info = final_df.loc[~final_df["5bases_maxEnt"].isin([np.nan,'','nan','NA']) & ~final_df["3bases_maxEnt"].isin([np.nan,'','nan','NA'])]
             max_ent_seq_info.to_csv('data/max_ent_seq.csv', header = True, index = True)
             max_ent_series_5, max_ent_series_3 = calculate_maxEnt(max_ent_seq_info)
-            final_df.loc[~final_df["5bases_maxEnt"].isin([np.nan,'','nan']) & ~final_df["3bases_maxEnt"].isin([np.nan,'','nan']), "5score_maxEnt"] = max_ent_series_5["maxEnt_5"].tolist()
-            final_df.loc[~final_df["5bases_maxEnt"].isin([np.nan,'','nan']) & ~final_df["3bases_maxEnt"].isin([np.nan,'','nan']), "3score_maxEnt"] = max_ent_series_3["maxEnt_3"].tolist()
-    final_df['strand_label'] = final_df['strand'].apply(lambda x: '+' if x ==1 else ('-' if x==2 else np.nan))
-    final_df['5_splice_site'] = final_df.apply(lambda x: int(x.first_base) if x.strand ==1 else (int(x.last_base) if x.strand==2 else np.nan), axis = 1)
-    final_df['3_splice_site'] = final_df.apply(lambda x: int(x.last_base) if x.strand ==1 else (int(x.first_base) if x.strand==2 else np.nan), axis = 1)
+            final_df.loc[~final_df["5bases_maxEnt"].isin([np.nan,'','nan','NA']) & ~final_df["3bases_maxEnt"].isin([np.nan,'','nan','NA']), "5score_maxEnt"] = max_ent_series_5["maxEnt_5"].tolist()
+            final_df.loc[~final_df["5bases_maxEnt"].isin([np.nan,'','nan','NA']) & ~final_df["3bases_maxEnt"].isin([np.nan,'','nan','NA']), "3score_maxEnt"] = max_ent_series_3["maxEnt_3"].tolist()
+    final_df['strand_label'] = final_df['strand'].apply(lambda x: '+' if x ==1 else ('-' if x==2 else 'NA'))
+    final_df['5_splice_site'] = final_df.apply(lambda x: int(x.first_base) if x.strand ==1 else (int(x.last_base) if x.strand==2 else 'NA'), axis = 1)
+    final_df['3_splice_site'] = final_df.apply(lambda x: int(x.last_base) if x.strand ==1 else (int(x.first_base) if x.strand==2 else 'NA'), axis = 1)
     final_df = final_df.iloc[:,np.r_[0,len(df.columns)-2,len(df.columns)-1,len(df.columns)-3,4:len(df.columns)-3]]
 
 
