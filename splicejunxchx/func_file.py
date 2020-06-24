@@ -379,17 +379,17 @@ def phyloP_func(jnc, bigwig, rangeval):
             fb_phyloP['length'].iloc[0] = fb_phyloP['end'].iloc[0] - (jnc.first_base - int(float(rangeval)/2)) +1
             fb_phyloP["pos"].iloc[0] = int(float(rangeval)/2) *-1
         elif ((jnc.first_base - int(float(rangeval)/2)) < fb_phyloP['start'].iloc[0]):
-            init_row = {'chr':fb_phyloP['chr'].iloc[0],'start':(jnc.first_base - int(float(rangeval)/2)), 'end':(fb_phyloP['start'].iloc[0]-1), 'pos':-1*int(float(rangeval)/2), 'length': fb_phyloP['start'].iloc[0]- (jnc.first_base - int(float(rangeval)/2))}
+            init_row = {'chr':fb_phyloP['chr'].iloc[0],'start':(jnc.first_base - int(float(rangeval)/2)), 'end':(fb_phyloP['start'].iloc[0]-1), 'pos':-1*int(float(rangeval)/2), 'length': fb_phyloP['start'].iloc[0]- (jnc.first_base - int(float(rangeval)/2)), 'score': 'NA'}
             fb_phyloP = fb_phyloP.append(init_row, ignore_index = True)
             fb_phyloP = fb_phyloP.sort_values(by = ['start'])
         if ((jnc.first_base + int(float(rangeval)/2)) < fb_phyloP['end'].iloc[-1]):
             fb_phyloP['length'].iloc[-1] = (jnc.first_base + int(float(rangeval)/2)) - fb_phyloP['start'].iloc[-1] +1
             fb_phyloP["pos"].iloc[-1] = int(float(rangeval)/2)
         elif ((jnc.first_base + int(float(rangeval)/2)) > fb_phyloP['end'].iloc[-1]):
-            fin_row = {'chr':fb_phyloP['chr'].iloc[-1],'end':(jnc.first_base + int(float(rangeval)/2)), 'start':(fb_phyloP['end'].iloc[-1]+1), 'pos':int(float(rangeval)/2), 'length':(jnc.first_base + int(float(rangeval)/2) - (fb_phyloP['end'].iloc[-1]+1) + 1)}
+            fin_row = {'chr':fb_phyloP['chr'].iloc[-1],'end':(jnc.first_base + int(float(rangeval)/2)), 'start':(fb_phyloP['end'].iloc[-1]+1), 'pos':int(float(rangeval)/2), 'length':(jnc.first_base + int(float(rangeval)/2) - (fb_phyloP['end'].iloc[-1]+1) + 1), 'score': 'NA'}
             fb_phyloP = fb_phyloP.append(fin_row, ignore_index = True)
             fb_phyloP = fb_phyloP.sort_values(by = ['start'])
-        fb_score = np.average(fb_phyloP.score, weights = fb_phyloP.length)
+        #fb_score = np.average(fb_phyloP.score, weights = fb_phyloP.length)
         fb_list_fin = [np.around(fb_phyloP['score'].iloc[0],3)] * fb_phyloP['length'].iloc[0]
         #fb_phyloP_fin = fb_phyloP[[ 'start','pos','score']]
         for i in range(1, len(fb_phyloP)):
@@ -399,6 +399,7 @@ def phyloP_func(jnc, bigwig, rangeval):
                 fb_list_fin.extend(['NA']*(fb_phyloP['start'].iloc[i] - fb_phyloP['end'].iloc[i-1] - 1))
                 fb_list_fin.extend([np.around(fb_phyloP['score'].iloc[i],3)]*fb_phyloP['length'].iloc[i])
 
+        fb_score = np.average([val for val in fb_list_fin if val not in ['NA']])
         #fb_phyloP_fin = fb_phyloP_fin.set_index('start')
         #fb_list = fb_phyloP_fin.values.tolist()
 
@@ -410,7 +411,7 @@ def phyloP_func(jnc, bigwig, rangeval):
             lb_phyloP['length'].iloc[0] = lb_phyloP['end'].iloc[0] - (jnc.last_base - int(float(rangeval)/2)) +1
             lb_phyloP["pos"].iloc[0] = int(float(rangeval)/2) *-1
         elif ((jnc.last_base - int(float(rangeval)/2)) < lb_phyloP['start'].iloc[0]):
-            init_row = {'chr':lb_phyloP['chr'].iloc[0],'start':(jnc.last_base - int(float(rangeval)/2)), 'end':(lb_phyloP['start'].iloc[0]-1), 'pos':-1*int(float(rangeval)/2),'length':lb_phyloP['start'].iloc[0]- (jnc.last_base - int(float(rangeval)/2))}
+            init_row = {'chr':lb_phyloP['chr'].iloc[0],'start':(jnc.last_base - int(float(rangeval)/2)), 'end':(lb_phyloP['start'].iloc[0]-1), 'pos':-1*int(float(rangeval)/2),'length':lb_phyloP['start'].iloc[0]- (jnc.last_base - int(float(rangeval)/2)), 'score': 'NA'}
             lb_phyloP = lb_phyloP.append(init_row, ignore_index = True)
             lb_phyloP = lb_phyloP.sort_values(by = ['start'])
         if ((jnc.last_base + int(float(rangeval)/2)) < lb_phyloP['end'].iloc[-1]):
@@ -418,10 +419,10 @@ def phyloP_func(jnc, bigwig, rangeval):
             lb_phyloP["pos"].iloc[-1] = int(float(rangeval)/2)
 
         elif ((jnc.last_base + int(float(rangeval)/2)) > lb_phyloP['end'].iloc[-1]):
-            fin_row = {'chr':lb_phyloP['chr'].iloc[-1],'end':(jnc.last_base + int(float(rangeval)/2)), 'start':(lb_phyloP['end'].iloc[-1]+1), 'pos':int(float(rangeval)/2), 'length':(jnc.last_base + int(float(rangeval)/2) - (lb_phyloP['end'].iloc[-1]+1) + 1)}
+            fin_row = {'chr':lb_phyloP['chr'].iloc[-1],'end':(jnc.last_base + int(float(rangeval)/2)), 'start':(lb_phyloP['end'].iloc[-1]+1), 'pos':int(float(rangeval)/2), 'length':(jnc.last_base + int(float(rangeval)/2) - (lb_phyloP['end'].iloc[-1]+1) + 1), 'score': 'NA'}
             lb_phyloP = lb_phyloP.append(fin_row, ignore_index = True)
             lb_phyloP = lb_phyloP.sort_values(by = ['start'])
-        lb_score = np.average(lb_phyloP.score, weights = lb_phyloP.length)
+        #lb_score = np.average(lb_phyloP.score, weights = lb_phyloP.length)
         lb_list_fin = [np.around(lb_phyloP['score'].iloc[0],3)] * lb_phyloP['length'].iloc[0]
         #lb_phyloP_fin = lb_phyloP[[ 'start','pos','score']]
         #lb_phyloP_fin =  lb_phyloP_fin.set_index('start')
@@ -432,6 +433,7 @@ def phyloP_func(jnc, bigwig, rangeval):
             else:
                 lb_list_fin.extend(['NA']*(lb_phyloP['start'].iloc[i] - lb_phyloP['end'].iloc[i-1] - 1))
                 lb_list_fin.extend([np.around(lb_phyloP['score'].iloc[i],3)]*lb_phyloP['length'].iloc[i])
+        lb_score = np.average([val for val in lb_list_fin if val not in ['NA']])
     #print(time.process_time() -st, '3a')
     return fb_score, fb_list_fin, lb_score, lb_list_fin
 
