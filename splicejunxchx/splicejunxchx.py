@@ -87,9 +87,9 @@ def main():
     no_strand_info = jnc_df[jnc_df['strand']==0]
     change_strand = set()
     for jncid in no_strand_info.itertuples():
-        change_strand.add((jncid.JNC_ID + '.1', jncid.chr, jncid.first_base, jncid.last_base, 1, jncid.motif, jncid.annotation, jncid.uniq_reads, jncid.no_reads, jncid.overhang,jncid.unidentified_strand))
-        change_strand.add((jncid.JNC_ID + '.2', jncid.chr, jncid.first_base, jncid.last_base, 2, jncid.motif, jncid.annotation, jncid.uniq_reads, jncid.no_reads, jncid.overhang, jncid.unidentified_strand))
-    no_strand_df = pd.DataFrame(change_strand, columns = ['JNC_ID','chr','first_base', 'last_base','strand','motif','annotation','uniq_reads', 'no_reads','overhang','unidentified_strand'])
+        change_strand.add((jncid.JNC_ID + '.1', jncid.chr, jncid.first_base, jncid.last_base, 1, jncid.motif, jncid.STAR_annotation, jncid.uniq_reads, jncid.no_reads, jncid.overhang,jncid.unidentified_strand))
+        change_strand.add((jncid.JNC_ID + '.2', jncid.chr, jncid.first_base, jncid.last_base, 2, jncid.motif, jncid.STAR_annotation, jncid.uniq_reads, jncid.no_reads, jncid.overhang, jncid.unidentified_strand))
+    no_strand_df = pd.DataFrame(change_strand, columns = ['JNC_ID','chr','first_base', 'last_base','strand','motif','STAR_annotation','uniq_reads', 'no_reads','overhang','unidentified_strand'])
     jnc_df = jnc_df.append(no_strand_df, ignore_index=True)
     jnc_df.set_index(['JNC_ID'], inplace = True)
 
@@ -271,9 +271,9 @@ def main():
             final_df.loc[~final_df["5bases_maxEnt"].isin([np.nan,'','nan']) & ~final_df["3bases_maxEnt"].isin([np.nan,'','nan']), "5score_maxEnt"] = max_ent_series_5["maxEnt_5"].tolist()
             final_df.loc[~final_df["5bases_maxEnt"].isin([np.nan,'','nan']) & ~final_df["3bases_maxEnt"].isin([np.nan,'','nan']), "3score_maxEnt"] = max_ent_series_3["maxEnt_3"].tolist()
     final_df['strand_label'] = final_df['strand'].apply(lambda x: '+' if x ==1 else ('-' if x==2 else np.nan))
-    final_df['5_splice_site'] = final_df.apply(lambda x: x.first_base if x.strand ==1 else (x.last_base if x.strand==2 else np.nan))
-    final_df['3_splice_site'] = final_df.apply(lambda x: x.last_base if x.strand ==1 else (x.first_base if x.strand==2 else np.nan))
-    print(final_df[522:530])
+    final_df['5_splice_site'] = final_df.apply(lambda x: int(x.first_base) if x.strand ==1 else (int(x.last_base) if x.strand==2 else np.nan), axis = 1)
+    final_df['3_splice_site'] = final_df.apply(lambda x: int(x.last_base) if x.strand ==1 else (int(x.first_base) if x.strand==2 else np.nan), axis = 1)
+    final_df = final_df.iloc[:,np.r_[0,len(df.columns)-2,len(df.columns)-1,len(df.columns)-3,4:len(df.columns)-3]]
 
 
 # Create output csv file

@@ -373,7 +373,7 @@ def phyloP_func(jnc, bigwig, rangeval):
     #print(time.process_time() -st, '2a')
     if fb_phyloP.empty:
         fb_score = np.nan
-        fb_list = []
+        fb_list_fin = [np.nan]
     else:
         if ((jnc.first_base - int(float(rangeval)/2)) > fb_phyloP['start'].iloc[0]):
             fb_phyloP['length'].iloc[0] = fb_phyloP['end'].iloc[0] - (jnc.first_base - int(float(rangeval)/2)) +1
@@ -390,7 +390,7 @@ def phyloP_func(jnc, bigwig, rangeval):
             fb_phyloP = fb_phyloP.append(fin_row, ignore_index = True)
             fb_phyloP = fb_phyloP.sort_values(by = ['start'])
         fb_score = np.average(fb_phyloP.score, weights = fb_phyloP.length)
-        fb_list_fin = [fb_phyloP['score'].iloc[0]] * fb_phyloP['length'].iloc[0]
+        fb_list_fin = [np.around(fb_phyloP['score'].iloc[0],3)] * fb_phyloP['length'].iloc[0]
         #fb_phyloP_fin = fb_phyloP[[ 'start','pos','score']]
         for i in range(1, len(fb_phyloP)):
             if fb_phyloP['start'].iloc[i] - fb_phyloP['end'].iloc[i-1] == 1:
@@ -404,7 +404,7 @@ def phyloP_func(jnc, bigwig, rangeval):
 
     if lb_phyloP.empty:
         lb_score = np.nan
-        lb_list = []
+        lb_list_fin = [np.nan]
     else:
         if ((jnc.last_base - int(float(rangeval)/2)) > lb_phyloP['start'].iloc[0]):
             lb_phyloP['length'].iloc[0] = lb_phyloP['end'].iloc[0] - (jnc.last_base - int(float(rangeval)/2)) +1
@@ -417,12 +417,12 @@ def phyloP_func(jnc, bigwig, rangeval):
             lb_phyloP['length'].iloc[-1] = (jnc.last_base + int(float(rangeval)/2)) - lb_phyloP['start'].iloc[-1] +1
             lb_phyloP["pos"].iloc[-1] = int(float(rangeval)/2)
 
-        elif ((jnc.first_base + int(float(rangeval)/2)) > fb_phyloP['end'].iloc[-1]):
+        elif ((jnc.last_base + int(float(rangeval)/2)) > lb_phyloP['end'].iloc[-1]):
             fin_row = {'chr':lb_phyloP['chr'].iloc[-1],'end':(jnc.last_base + int(float(rangeval)/2)), 'start':(lb_phyloP['end'].iloc[-1]+1), 'pos':int(float(rangeval)/2), 'length':(jnc.last_base + int(float(rangeval)/2) - (lb_phyloP['end'].iloc[-1]+1) + 1)}
             lb_phyloP = lb_phyloP.append(fin_row, ignore_index = True)
             lb_phyloP = lb_phyloP.sort_values(by = ['start'])
         lb_score = np.average(lb_phyloP.score, weights = lb_phyloP.length)
-        lb_list_fin = [lb_phyloP['score'].iloc[0]] * lb_phyloP['length'].iloc[0]
+        lb_list_fin = [np.around(lb_phyloP['score'].iloc[0],3)] * lb_phyloP['length'].iloc[0]
         #lb_phyloP_fin = lb_phyloP[[ 'start','pos','score']]
         #lb_phyloP_fin =  lb_phyloP_fin.set_index('start')
         #lb_list = lb_phyloP_fin.values.tolist()

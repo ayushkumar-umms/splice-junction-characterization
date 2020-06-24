@@ -7,7 +7,7 @@ import subprocess
 
 def sequence_splice_site(sp_junc, fasta_file):
     part = sp_junc
-    part = part[['chr','first_base','last_base','motif','annotation','strand']]
+    part = part[['chr','first_base','last_base','motif','STAR_annotation','strand']]
     part['first_base'] = part['first_base']
     #part['chr'] = 'chr' + part['chr'].astype(str)
     part['strand'] = part['strand'].apply(lambda x: '+' if x ==1 else ('-' if x==2 else np.nan))
@@ -43,7 +43,7 @@ def sequence_splice_site(sp_junc, fasta_file):
     three_pr_seq = seqs.loc[seqs.site.isin(['3']), 'seq']
     return seqs
 if __name__ == '__main__':
-    col_names = ['chr','first_base', 'last_base','strand','motif','annotation','uniq_reads', 'no_reads','overhang']
+    col_names = ['chr','first_base', 'last_base','strand','motif','STAR_annotation','uniq_reads', 'no_reads','overhang']
     jnc_df =  pd.read_csv(argv[1], names = col_names, sep = '\t', dtype = {'chr': str})
     jncid_list = []
     for id in range(1,len(jnc_df.index)+1):
