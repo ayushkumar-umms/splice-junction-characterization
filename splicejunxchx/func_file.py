@@ -277,8 +277,8 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
         dict_three['intron'] = ';'.join([(s.split(':')[0] +':'+ s.split(':')[-1]) for s in junctions_three if ':intron:' in s])
     #dict_five['intron'] = five_intron
     #dict_three['intron'] = three_intron
-    dict_five['strandofgene'] = five_info_df['strand'].iloc[0]
-    dict_three['strandofgene'] = three_info_df['strand'].iloc[0]
+    dict_five['strandofgene'] = strand
+    dict_three['strandofgene'] = strand
     #dict_five['otherregions'] = set(other_junctions_five)
     #dict_three['otherregions'] = set(other_junctions_three)
     return (dict_five, dict_three)
