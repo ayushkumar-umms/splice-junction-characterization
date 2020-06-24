@@ -218,14 +218,14 @@ def main():
             fb_phyloPval, fb_extract_phyloP, lb_phyloPval, lb_extract_phyloP = phyloP_func(jncrow,args.phyloPscores[0], args.phyloPscores[1])
             if jncrow.strand == 1:
                 final_df.at[jncrow.Index, "5phyloPscore"] = fb_phyloPval
-                final_df.at[jncrow.Index, "5phyloPlist"] = fb_extract_phyloP
+                final_df.at[jncrow.Index, "5phyloPlist"] = ', '.join(fb_extract_phyloP)
                 final_df.at[jncrow.Index, "3phyloPscore"] = lb_phyloPval
-                final_df.at[jncrow.Index, "3phyloPlist"] = lb_extract_phyloP
+                final_df.at[jncrow.Index, "3phyloPlist"] = ', '.join(lb_extract_phyloP)
             elif jncrow.strand == 2:
                 final_df.at[jncrow.Index, "3phyloPscore"] = fb_phyloPval
-                final_df.at[jncrow.Index, "3phyloPlist"] = fb_extract_phyloP
+                final_df.at[jncrow.Index, "3phyloPlist"] = ', '.join(fb_extract_phyloP)
                 final_df.at[jncrow.Index, "5phyloPscore"] = lb_phyloPval
-                final_df.at[jncrow.Index, "5phyloPlist"] = lb_extract_phyloP
+                final_df.at[jncrow.Index, "5phyloPlist"] = ', '.join(lb_extract_phyloP)
 
         for val in five_prime_cols: # Add all 5' info into the appropriate columns
             if val.split('_')[-1] not in five_dict:

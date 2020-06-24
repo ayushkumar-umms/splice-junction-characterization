@@ -22,7 +22,7 @@ CLASSIFIERS = [
 
 # calling the setup function
 setup(name='splicejunxchx',
-      version='1.2',
+      version='1.4',
       description='characterize the splice junctions outputted by SJ.out.tab file',
       long_description=long_description,
       long_description_content_type="text/markdown",
