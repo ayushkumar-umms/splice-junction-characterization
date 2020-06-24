@@ -74,7 +74,7 @@ def main():
 
     jnc_filename= str(args.inputs[1])
     if jnc_filename.endswith('out.tab'): # Create dataframe for SJ.out.tab
-        col_names = ['chr','first_base', 'last_base','strand','motif','annotation','uniq_reads', 'no_reads','overhang']
+        col_names = ['chr','first_base', 'last_base','strand','motif','STAR_annotation','uniq_reads', 'no_reads','overhang']
         jnc_df =  pd.read_csv(args.inputs[1], names = col_names, sep = '\t', dtype = {'chr': str})
         jnc_df['unidentified_strand'] = [1 if x == 0 else 0 for x in jnc_df['strand']]
         jncid_list = []
@@ -218,14 +218,14 @@ def main():
             fb_phyloPval, fb_extract_phyloP, lb_phyloPval, lb_extract_phyloP = phyloP_func(jncrow,args.phyloPscores[0], args.phyloPscores[1])
             if jncrow.strand == 1:
                 final_df.at[jncrow.Index, "5phyloPscore"] = fb_phyloPval
-                final_df.at[jncrow.Index, "5phyloPlist"] = ', '.join(fb_extract_phyloP)
+                final_df.at[jncrow.Index, "5phyloPlist"] = ", ".join(map(str, fb_extract_phyloP))
                 final_df.at[jncrow.Index, "3phyloPscore"] = lb_phyloPval
-                final_df.at[jncrow.Index, "3phyloPlist"] = ', '.join(lb_extract_phyloP)
+                final_df.at[jncrow.Index, "3phyloPlist"] = ", ".join(map(str,lb_extract_phyloP))
             elif jncrow.strand == 2:
                 final_df.at[jncrow.Index, "3phyloPscore"] = fb_phyloPval
-                final_df.at[jncrow.Index, "3phyloPlist"] = ', '.join(fb_extract_phyloP)
+                final_df.at[jncrow.Index, "3phyloPlist"] = ", ".join(map(str,fb_extract_phyloP))
                 final_df.at[jncrow.Index, "5phyloPscore"] = lb_phyloPval
-                final_df.at[jncrow.Index, "5phyloPlist"] = ', '.join(lb_extract_phyloP)
+                final_df.at[jncrow.Index, "5phyloPlist"] = ", ".join(map(str,lb_extract_phyloP))
 
         for val in five_prime_cols: # Add all 5' info into the appropriate columns
             if val.split('_')[-1] not in five_dict:
@@ -270,7 +270,9 @@ def main():
             max_ent_series_5, max_ent_series_3 = calculate_maxEnt(max_ent_seq_info)
             final_df.loc[~final_df["5bases_maxEnt"].isin([np.nan,'','nan']) & ~final_df["3bases_maxEnt"].isin([np.nan,'','nan']), "5score_maxEnt"] = max_ent_series_5["maxEnt_5"].tolist()
             final_df.loc[~final_df["5bases_maxEnt"].isin([np.nan,'','nan']) & ~final_df["3bases_maxEnt"].isin([np.nan,'','nan']), "3score_maxEnt"] = max_ent_series_3["maxEnt_3"].tolist()
-    final_df['strand_label'] = df.apply(lambda x: '+' if x ==1 else ('-' if x==2 else np.nan))
+    final_df['strand_label'] = final_df['strand'].apply(lambda x: '+' if x ==1 else ('-' if x==2 else np.nan))
+    final_df['5_splice_site'] = final_df.apply(lambda x: x.first_base if x.strand ==1 else (x.last_base if x.strand==2 else np.nan))
+    final_df['3_splice_site'] = final_df.apply(lambda x: x.last_base if x.strand ==1 else (x.first_base if x.strand==2 else np.nan))
     print(final_df[522:530])
 
 
