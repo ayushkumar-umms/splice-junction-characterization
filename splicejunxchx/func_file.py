@@ -24,7 +24,7 @@ def extract_spljnc(splice_jnc, gtf, strand, cons_exons, gtf_exons):
     five_info_df = gtf[extract_five_info]
     # What are the features of the strand that are found in this junction (gene,transcript, exon)?
     five_features = set(five_info_df['feature'].tolist())
-    possible_elements = set(gtf['feature'].tolist())
+    possible_elements = set(['gene','transcript','exon','CDS','start_codon','stop_codon','five_prime_utr','three_prime_utr'])
     # Create a dictionary for the features of the 5' end and set it to 1 or 0
     dict_five_sam = {ft:1 for ft in possible_elements.intersection(five_features)}
     dict_five_dif = {ft:0 for ft in possible_elements.difference(five_features)}
@@ -400,6 +400,7 @@ def phyloP_func(jnc, bigwig, rangeval):
                 fb_list_fin.extend([np.around(fb_phyloP['score'].iloc[i],3)]*fb_phyloP['length'].iloc[i])
 
         fb_score = np.average([val for val in fb_list_fin if (val not in [np.nan, 'NA']) and (not np.isnan(val))])
+        fb_score = np.around(fb_score,3)
         #fb_phyloP_fin = fb_phyloP_fin.set_index('start')
         #fb_list = fb_phyloP_fin.values.tolist()
 
@@ -434,6 +435,7 @@ def phyloP_func(jnc, bigwig, rangeval):
                 lb_list_fin.extend(['NA']*(lb_phyloP['start'].iloc[i] - lb_phyloP['end'].iloc[i-1] - 1))
                 lb_list_fin.extend([np.around(lb_phyloP['score'].iloc[i],3)]*lb_phyloP['length'].iloc[i])
         lb_score = np.average([val for val in lb_list_fin if (val not in [np.nan, 'NA']) and (not np.isnan(val))])
+        lb_score = np.around(lb_score,3)
     #print(time.process_time() -st, '3a')
     return fb_score, fb_list_fin, lb_score, lb_list_fin
 

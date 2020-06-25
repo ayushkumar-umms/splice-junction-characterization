@@ -109,8 +109,7 @@ def main():
     #final_df = jnc_df[col_names[0:6]]
     jnc_df = jnc_df.sort_values(by = ['chr','strand'])
     # add_cols is all the data we want to gather and have in our final datarame
-    add_cols = ["5_in_gene","5_in_exon","5_in_constitutiveexon","5_in_intron", "5_in_constitutiveintron","5_in_fiveprimeutr","5_in_threeprimeutr","5_in_CDS","5_in_startcodon","5_in_stopcodon",  "5_in_strandofgene", "3_in_gene", "3_in_exon",  "3_in_constitutiveexon",
-                "3_in_intron","3_in_constitutiveintron","3_in_fiveprimeutr","3_in_threeprimeutr","3_in_CDS","3_in_startcodon","3_in_stopcodon","3_in_strandofgene"]
+    add_cols = ["5_in_gene","5_in_strandofgene" "5_in_exon","5_in_constitutiveexon","5_in_intron", "5_in_constitutiveintron","5_in_fiveprimeutr","5_in_threeprimeutr","5_in_CDS","5_in_startcodon","5_in_stopcodon", "3_in_gene","3_in_strandofgene", "3_in_exon",  "3_in_constitutiveexon","3_in_intron","3_in_constitutiveintron","3_in_fiveprimeutr","3_in_threeprimeutr","3_in_CDS","3_in_startcodon","3_in_stopcodon","3_in_strandofgene"]
 
     if args.sequence_file != None:
         seq_info = ["5ss_sequence_51bp", "3ss_sequence_51bp", "5ss_sequence_2bp","3ss_sequence_2bp","5bases_maxEnt","3bases_maxEnt", "5score_maxEnt","3score_maxEnt"]
@@ -217,14 +216,14 @@ def main():
         if args.phyloPscores != None:
             fb_phyloPval, fb_extract_phyloP, lb_phyloPval, lb_extract_phyloP = phyloP_func(jncrow,args.phyloPscores[0], args.phyloPscores[1])
             if jncrow.strand == 1:
-                final_df.at[jncrow.Index, "5phyloPscore"] = np.around(fb_phyloPval,3)
+                final_df.at[jncrow.Index, "5phyloPscore"] = fb_phyloPval
                 final_df.at[jncrow.Index, "5phyloPlist"] = ", ".join(map(str, fb_extract_phyloP))
-                final_df.at[jncrow.Index, "3phyloPscore"] = np.around(lb_phyloPval,3)
+                final_df.at[jncrow.Index, "3phyloPscore"] = lb_phyloPval
                 final_df.at[jncrow.Index, "3phyloPlist"] = ", ".join(map(str,lb_extract_phyloP))
             elif jncrow.strand == 2:
-                final_df.at[jncrow.Index, "3phyloPscore"] = np.around(fb_phyloPval,3)
+                final_df.at[jncrow.Index, "3phyloPscore"] = fb_phyloPval
                 final_df.at[jncrow.Index, "3phyloPlist"] = ", ".join(map(str,fb_extract_phyloP))
-                final_df.at[jncrow.Index, "5phyloPscore"] = np.around(lb_phyloPval,3)
+                final_df.at[jncrow.Index, "5phyloPscore"] = lb_phyloPval
                 final_df.at[jncrow.Index, "5phyloPlist"] = ", ".join(map(str,lb_extract_phyloP))
 
         for val in five_prime_cols: # Add all 5' info into the appropriate columns
