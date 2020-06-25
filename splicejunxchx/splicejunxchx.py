@@ -217,14 +217,14 @@ def main():
         if args.phyloPscores != None:
             fb_phyloPval, fb_extract_phyloP, lb_phyloPval, lb_extract_phyloP = phyloP_func(jncrow,args.phyloPscores[0], args.phyloPscores[1])
             if jncrow.strand == 1:
-                final_df.at[jncrow.Index, "5phyloPscore"] = fb_phyloPval
+                final_df.at[jncrow.Index, "5phyloPscore"] = np.around(fb_phyloPval,3)
                 final_df.at[jncrow.Index, "5phyloPlist"] = ", ".join(map(str, fb_extract_phyloP))
-                final_df.at[jncrow.Index, "3phyloPscore"] = lb_phyloPval
+                final_df.at[jncrow.Index, "3phyloPscore"] = np.around(lb_phyloPval,3)
                 final_df.at[jncrow.Index, "3phyloPlist"] = ", ".join(map(str,lb_extract_phyloP))
             elif jncrow.strand == 2:
-                final_df.at[jncrow.Index, "3phyloPscore"] = fb_phyloPval
+                final_df.at[jncrow.Index, "3phyloPscore"] = np.around(fb_phyloPval,3)
                 final_df.at[jncrow.Index, "3phyloPlist"] = ", ".join(map(str,fb_extract_phyloP))
-                final_df.at[jncrow.Index, "5phyloPscore"] = lb_phyloPval
+                final_df.at[jncrow.Index, "5phyloPscore"] = np.around(lb_phyloPval,3)
                 final_df.at[jncrow.Index, "5phyloPlist"] = ", ".join(map(str,lb_extract_phyloP))
 
         for val in five_prime_cols: # Add all 5' info into the appropriate columns
@@ -273,7 +273,7 @@ def main():
     final_df['strand_label'] = final_df['strand'].apply(lambda x: '+' if x ==1 else ('-' if x==2 else 'NA'))
     final_df['5_splice_site'] = final_df.apply(lambda x: int(x.first_base) if x.strand ==1 else (int(x.last_base) if x.strand==2 else 'NA'), axis = 1)
     final_df['3_splice_site'] = final_df.apply(lambda x: int(x.last_base) if x.strand ==1 else (int(x.first_base) if x.strand==2 else 'NA'), axis = 1)
-    final_df = final_df.iloc[:,np.r_[0,len(df.columns)-2,len(df.columns)-1,len(df.columns)-3,4:len(df.columns)-3]]
+    final_df = final_df.iloc[:,np.r_[0,len(final_df.columns)-2,len(final_df.columns)-1,len(final_df.columns)-3,4:len(final_df.columns)-3]]
 
 
 # Create output csv file
