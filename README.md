@@ -38,7 +38,7 @@ pip install splicejunxchx
 
 ## Usage
 
-One suggestion is to ensure there is a data directory in whichever root directory you plan to utilize this code. The data directory will store some temp files that include: Two CSV file of all the splice junctions and constitutive exons based on the GTF File 
+One suggestion is to ensure there is a 'data' directory in whichever root directory you plan to utilize this code. The data directory will store some temp files that include: Two CSV file of all the splice junctions and constitutive exons based on the GTF File 
 
 The following is the full usage possibilities that can be added with splicejunxchx
 
@@ -80,7 +80,7 @@ splicejunxchx raw/Homo_sapiens.GRCh38.95.gtf.gz raw_data/ERR152SJ.out.tab output
 
 ### General notes about needed files and output structure
 
-Make sure that the GTF File provided does not list out intron locations. This pipeline assumes that the only features present in the GTF File are: gene, transcript, exon, five_prime_utr, CDS, three_prime_utr, start codon, and stop codon
+Make sure that the GTF File provided does not list out intron locations. This pipeline assumes that the only features present in the GTF File are: gene, transcript, exon, five_prime_utr, CDS, three_prime_utr, start codon, stop codon, and Selenocysteine
 
 For splice junctions that have a unidentified strand (strand = 0), the pipeline create two copies of that splice junction and changes the strand=1 for one junction and the other to strand=2
 - EX: If JNC92 has a strand of 0
@@ -91,19 +91,14 @@ For splice junctions that have a unidentified strand (strand = 0), the pipeline 
 
 The following columns are provided with more detail:
 
-- Strand: [0 is undefined; 1 is positive; 2 is negative]
 - Motif:[0: non-canonical; 1: GT/AG, 2: CT/AC, 3: GC/AG, 4: CT/GC, 5:AT/AC, 6: GT/AT]
-- Annotation: Both 5' and 3' splice site are annotated as one splice junction according to STAR
+- STAR_annotation: Both 5' and 3' splice site are annotated as one splice junction according to STAR
 - Unidentified_strand: splice junction originally was undefined (Strand = 0), but this junction has been developed with assumption of being on positive or negative strand (see 'strand' column for assumption)
-- 5'_in_constitutiveexon: [1: yes, 0: no, NaN: no exon here so can't be constitutive]
-- 5'_in_constitutiveintron: [1: yes, 0: no, NaN: no intron here so can't be constitutive]
-- 5'_in_specificregions: If the 5' and 3' splice sites are found in the same gene, then output the region the 5' end is found
+- 5'_in_constitutiveexon: Name of gene followed by the coordinates, else NA
+- 5'_in_constitutiveintron: Name of gene followed by the coordinates, else NA
 - 5'_in_CDS: If the 5' end is in a coding sequence region
-- 5'_in_otherregions: If the 5' and 3' splice sites are found in differing genes, then output the region the 5' end is found in those differing genes
 - 5'phyloPscore: Average score over N nucleotides of each splice site
-- 5'phylopList: Array of relative nucleotide position from splice site (position 1) and its corresponding phyloP value (position 2)
-    - Ex: [[-5.0, 0.41200000000000003], [-4.0, 0.395], [-2.0, 0.45799999999999996], [-1.0, 0.41200000000000003], [1.0, 0.45799999999999996], [2.0, 0.484], [3.0, -0.474], [4.0, -0.867]]
-    - The missing positions for example -3 has the same phyloP score as the nucleotide that is at -4
+- 5'phylopList: List of phyloP values starting from lowest coordinate to highest coordinate
 - 5'bases_maxEnt and 3'bases_maxEnt: the sequence needed to run a maxEnt score
 - Similar logic is present in 3' regions 
 
