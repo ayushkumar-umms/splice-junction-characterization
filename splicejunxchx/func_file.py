@@ -343,7 +343,7 @@ def closest_splice_sites(jnc, splice_list):
 
 def phyloP_func(jnc, bigwig, rangeval):
     st = time.process_time()
-    bash_cmd = "bigWigtoBedGraph -chrom=chr%s -start=%i -end=%i %s data/phyloPscores.bedGraph" % (jnc.chr, int(jnc.first_base - 100), int(jnc.last_base + 100), bigwig)
+    bash_cmd = "bigWigToBedGraph -chrom=chr%s -start=%i -end=%i %s data/phyloPscores.bedGraph" % (jnc.chr, int(jnc.first_base - 100), int(jnc.last_base + 100), bigwig)
     process = subprocess.Popen(bash_cmd.split(), stdout=subprocess.PIPE)
     output, error = process.communicate()
 
