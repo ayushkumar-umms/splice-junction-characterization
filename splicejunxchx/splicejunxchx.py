@@ -101,6 +101,8 @@ def main():
     else:
         all_spl_junc = all_spl_junctions(gtf_df)
         cons_exons = constitutive_exons(gtf_df)
+        all_spl_junc_filename = 'data/all_spl_junc_%s.csv' % temp.rsplit('/',1)[-1]
+        cons_exons_filename = 'data/cons_exons_%s.csv' % temp.rsplit('/',1)[-1]
         all_spl_junc.to_csv('data/all_spl_junc_%s.csv', index = False) % temp.rsplit('/',1)[-1]
         cons_exons.to_csv('data/cons_exons_%s.csv', index = False) % temp.rsplit('/',1)[-1]
     #  Final df to develop
